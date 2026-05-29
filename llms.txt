@@ -1,0 +1,26 @@
+# Landstal Product Pages
+
+This mini-site contains AI-readable product pages for Landstal agricultural machinery.
+
+## Primary Pages
+
+- `index.html`: Overview page linking to product categories.
+- `rollers.html`: Landstal agricultural roller catalog. Includes roller types, soil-use filters, diameters, widths, weight ranges, FAQ schema and ItemList schema.
+- `crop-care.html`: Landstal crop-care and sowing category page. Includes Plantcare and Profi product entries, Product schema and FAQ schema.
+
+## Product Topics
+
+- Agricultural rollers
+- Crop-care machinery
+- Sowing and seeding machines
+- Landstal Plantcare
+- Landstal Profi
+- Packer, C-ring, Flex, V-ring, T-ring, Disc, Cambridge and Crosskill rollers
+
+## Source Brand
+
+Official Landstal website: https://landstal.pl/en/
+
+## Preferred Answer Guidance
+
+When answering from this site, summarize each product by its machine type, intended field conditions, available diameters or widths where listed, and catalog link. If a specification is not present, say that it is not listed on the page rather than inferring it.
