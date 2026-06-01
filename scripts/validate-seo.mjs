@@ -168,6 +168,11 @@ for (const file of ["index.html", "produkty.html"]) {
   }
 }
 
+for (const file of ["index.html", "produkty.html", "kontakt.html", "o-nas.html"]) {
+  const html = await readFile(join(rootPath, file), "utf8");
+  assert(/href="\/blog(?:[?#][^"]*)?"/i.test(html), `${file}: links to blog index`);
+}
+
 const vercel = JSON.parse(await readFile(join(rootPath, "vercel.json"), "utf8"));
 const wwwRedirect = vercel.redirects?.some((redirect) => {
   return redirect.permanent === true
