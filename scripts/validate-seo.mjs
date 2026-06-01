@@ -1,6 +1,6 @@
 import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { join } from "node:path";
+import { dirname, join, relative, sep } from "node:path";
 
 const root = new URL("../", import.meta.url);
 const rootPath = fileURLToPath(root);
@@ -13,6 +13,14 @@ const requiredLandingPages = [
   "lucni-brany.html",
 ];
 const requiredLandingPaths = requiredLandingPages.map((file) => `/${file.replace(/\.html$/, "")}`);
+const requiredBlogPaths = [
+  "/blog",
+  "/blog/jak-vybrat-diskovy-podmitac",
+  "/blog/kdy-pouzit-hloubkovy-kypric",
+  "/blog/lucni-brany-regenerace-pastvin",
+  "/blog/diskovy-podmitac-vs-radlickovy-kypric",
+  "/blog/jaky-pracovni-zaber-podle-vykonu-traktoru",
+];
 
 const failures = [];
 const ok = [];
@@ -32,6 +40,12 @@ function assert(condition, message) {
 
 function canonicalForHtmlFile(file) {
   if (file === "index.html") return `${base}/`;
+  if (file.endsWith(`${sep}index.html`) || file.endsWith("/index.html")) {
+    const cleanPath = file
+      .replaceAll(sep, "/")
+      .replace(/\/index\.html$/, "");
+    return `${base}/${cleanPath}`;
+  }
   return `${base}/${file.replace(/\.html$/, "")}`;
 }
 
@@ -41,14 +55,35 @@ function escapeRegex(value) {
 
 function pathToHtmlFile(pathname) {
   if (pathname === "/") return "index.html";
-  return `${pathname.replace(/^\/+/, "").replace(/\/$/, "")}.html`;
+  const cleanPath = pathname.replace(/^\/+/, "").replace(/\/$/, "");
+  if (cleanPath.startsWith("blog")) return `${cleanPath}/index.html`;
+  return `${cleanPath}.html`;
 }
 
-const files = await readdir(rootPath);
-const htmlFiles = files.filter((file) => file.endsWith(".html")).sort();
+async function collectHtmlFiles(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const found = [];
+  for (const entry of entries) {
+    const fullPath = join(directory, entry.name);
+    if (entry.isDirectory()) {
+      if (entry.name === ".git" || entry.name === "node_modules") continue;
+      found.push(...await collectHtmlFiles(fullPath));
+    } else if (entry.isFile() && entry.name.endsWith(".html")) {
+      found.push(relative(rootPath, fullPath).replaceAll(sep, "/"));
+    }
+  }
+  return found;
+}
+
+const htmlFiles = (await collectHtmlFiles(rootPath)).sort();
 
 for (const file of requiredLandingPages) {
   assert(htmlFiles.includes(file), `${file}: required SEO landing page exists`);
+}
+
+for (const path of requiredBlogPaths) {
+  const file = pathToHtmlFile(path);
+  assert(htmlFiles.includes(file), `${file}: required blog page exists`);
 }
 
 for (const file of htmlFiles) {
@@ -66,6 +101,11 @@ for (const file of htmlFiles) {
   assert(ogUrlMatches.length === 1, `${file}: exactly one og:url`);
   if (requiredLandingPages.includes(file)) {
     assert(h1Matches.length === 1, `${file}: required landing page has exactly one H1`);
+  }
+  if (file.replaceAll(sep, "/").startsWith("blog/") && file.replaceAll(sep, "/") !== "blog/index.html") {
+    assert(h1Matches.length === 1, `${file}: blog article has exactly one H1`);
+    assert(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*"@type"\s*:\s*"Article"/i.test(html), `${file}: has Article structured data`);
+    assert(/class="breadcrumbs"/i.test(html), `${file}: has breadcrumbs`);
   }
 
   if (canonicalMatches.length === 1) {
@@ -102,6 +142,10 @@ for (const file of htmlFiles) {
 
 for (const path of requiredLandingPaths) {
   assert(sitemapUrls.includes(`${base}${path}`), `sitemap.xml includes new landing URL ${base}${path}`);
+}
+
+for (const path of requiredBlogPaths) {
+  assert(sitemapUrls.includes(`${base}${path}`), `sitemap.xml includes blog URL ${base}${path}`);
 }
 
 const existingHtmlFiles = new Set(htmlFiles);

@@ -914,6 +914,67 @@ dd {
   color: var(--white);
 }
 
+.breadcrumbs {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 0.92rem;
+  gap: 0.55rem;
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumbs a {
+  color: var(--primary);
+}
+
+.breadcrumbs a:hover {
+  color: var(--white);
+}
+
+.blog-grid {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.blog-card,
+.cta-panel {
+  background: rgba(10, 15, 38, 0.7);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: 0 0 28px rgba(38, 138, 255, 0.08);
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
+
+.blog-card span {
+  color: var(--primary);
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.blog-card h2 {
+  font-size: clamp(1.45rem, 2.8vw, 2.35rem);
+  margin: 0.75rem 0 1rem;
+}
+
+.blog-card p,
+.cta-panel p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.cta-panel {
+  margin-top: 2rem;
+}
+
+.cta-panel h2 {
+  font-size: clamp(1.7rem, 3vw, 2.8rem);
+}
+
 .seo-hub {
   background: rgba(10, 15, 38, 0.78);
   max-width: none;
@@ -1144,6 +1205,7 @@ dd {
   .category-grid,
   .soil-machine-grid,
   .seo-grid,
+  .blog-grid,
   .catalog-cta {
     grid-template-columns: 1fr;
   }
@@ -1191,6 +1253,7 @@ dd {
   .category-grid,
   .soil-machine-grid,
   .seo-grid,
+  .blog-grid,
   .about-columns,
   .quote-form {
     grid-template-columns: 1fr;
