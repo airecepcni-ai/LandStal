@@ -1,4 +1,17 @@
 {
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.landstal.cz"
+        }
+      ],
+      "destination": "https://landstal.cz/:path*",
+      "permanent": true
+    }
+  ]
 }

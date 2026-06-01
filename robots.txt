@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /staging/
+Disallow: /dev/
+Disallow: /.git/
+Disallow: /.vercel/
+Disallow: /node_modules/
+
+Sitemap: https://landstal.cz/sitemap.xml
