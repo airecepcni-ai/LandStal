@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { readdir, readFile, stat } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join, relative, sep } from "node:path";
 
@@ -20,6 +20,20 @@ const requiredBlogPaths = [
   "/blog/lucni-brany-regenerace-pastvin",
   "/blog/diskovy-podmitac-vs-radlickovy-kypric",
   "/blog/jaky-pracovni-zaber-podle-vykonu-traktoru",
+];
+const requiredFavicons = [
+  "favicon.ico",
+  "favicon-16x16.png",
+  "favicon-32x32.png",
+  "apple-touch-icon.png",
+  "android-chrome-192x192.png",
+  "android-chrome-512x512.png",
+];
+const faviconTags = [
+  '<link rel="icon" href="/favicon.ico" sizes="any">',
+  '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">',
+  '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">',
+  '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
 ];
 
 const failures = [];
@@ -86,6 +100,11 @@ for (const path of requiredBlogPaths) {
   assert(htmlFiles.includes(file), `${file}: required blog page exists`);
 }
 
+for (const file of requiredFavicons) {
+  const info = await stat(join(rootPath, file)).catch(() => null);
+  assert(Boolean(info?.isFile() && info.size > 0), `${file}: favicon asset exists at public root`);
+}
+
 for (const file of htmlFiles) {
   const html = await readFile(join(rootPath, file), "utf8");
   const canonicalMatches = [...html.matchAll(/<link\s+rel="canonical"\s+href="([^"]+)"\s*\/?>/gi)];
@@ -99,6 +118,9 @@ for (const file of htmlFiles) {
   assert(titleMatches.length === 1 && titleMatches[0][1].trim().length > 0, `${file}: has one non-empty title`);
   assert(descriptionMatches.length === 1 && descriptionMatches[0][1].trim().length > 0, `${file}: has one meta description`);
   assert(ogUrlMatches.length === 1, `${file}: exactly one og:url`);
+  for (const tag of faviconTags) {
+    assert(html.includes(tag), `${file}: includes favicon tag ${tag}`);
+  }
   if (requiredLandingPages.includes(file)) {
     assert(h1Matches.length === 1, `${file}: required landing page has exactly one H1`);
   }
@@ -155,6 +177,12 @@ for (const file of htmlFiles) {
   for (const href of hrefs) {
     if (!href.startsWith("/") || href.startsWith("//")) continue;
     const pathname = href.split(/[?#]/)[0];
+    if (/\.(ico|png|jpg|jpeg|webp|gif|svg|css|js|pdf|mp4)$/i.test(pathname)) {
+      const assetPath = pathname.replace(/^\/+/, "");
+      const info = await stat(join(rootPath, assetPath)).catch(() => null);
+      assert(Boolean(info?.isFile()), `${file}: asset link ${href} exists at public root`);
+      continue;
+    }
     const targetFile = pathToHtmlFile(pathname);
     assert(existingHtmlFiles.has(targetFile), `${file}: internal link ${href} resolves to ${targetFile}`);
   }
