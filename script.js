@@ -97,24 +97,36 @@ window.addEventListener("resize", updateExplodedScroll);
 updateActiveNav();
 updateExplodedScroll();
 
-quoteForm?.addEventListener("submit", (event) => {
+quoteForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
 
+  const submitButton = quoteForm.querySelector("button[type='submit']");
   const data = new FormData(quoteForm);
-  const subject = encodeURIComponent(`Poptávka Landstal: ${data.get("machine")}`);
-  const body = encodeURIComponent(
-    [
-      `Jméno a firma: ${data.get("name")}`,
-      `Telefon: ${data.get("phone")}`,
-      `E-mail: ${data.get("email")}`,
-      `Zájem: ${data.get("machine")}`,
-      "",
-      "Poznámka:",
-      String(data.get("message") || ""),
-    ].join("\n"),
-  );
+  const payload = Object.fromEntries(data.entries());
 
-  window.location.href = `mailto:oplustil@barnetasynove.cz?subject=${subject}&body=${body}`;
-  formStatus.textContent = "E-mailová poptávka je připravena.";
-  quoteForm.reset();
+  formStatus.textContent = "Odesíláme poptávku...";
+  formStatus.className = "form-status wide";
+  submitButton.disabled = true;
+
+  try {
+    const response = await fetch(quoteForm.action || "/api/enquiry", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok || !result.ok) {
+      throw new Error(result.message || "Poptávku se nepodařilo odeslat.");
+    }
+
+    quoteForm.reset();
+    formStatus.textContent = "Děkujeme. Poptávka byla odeslána.";
+    formStatus.className = "form-status wide success";
+  } catch (error) {
+    formStatus.textContent = error.message || "Poptávku se nepodařilo odeslat. Zkuste to prosím znovu.";
+    formStatus.className = "form-status wide error";
+  } finally {
+    submitButton.disabled = false;
+  }
 });

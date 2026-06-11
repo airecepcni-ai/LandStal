@@ -337,7 +337,8 @@
             <p>Vyplňte nezávaznou poptávku nebo si domluvte předvedení stroje u vás na poli.</p>
           </div>
 
-          <form class="quote-form">
+          <form class="quote-form" action="/api/enquiry" method="post">
+            <label class="website-field wide" aria-hidden="true">Web<input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
             <label>Jméno a firma<input name="name" type="text" placeholder="Jan Novák, Farma Novák" required /></label>
             <label>Telefon<input name="phone" type="tel" placeholder="+420 ..." /></label>
             <label>E-mail<input name="email" type="email" placeholder="jan@farma.cz" required /></label>
@@ -360,7 +361,7 @@
               <input name="gdpr" type="checkbox" required />
               <span>Souhlasím se zpracováním osobních údajů pro účely vyřízení poptávky.</span>
             </label>
-            <button class="button button-primary wide" type="submit">Připravit e-mail</button>
+            <button class="button button-primary wide" type="submit">Odeslat poptávku</button>
             <p class="form-status wide" aria-live="polite"></p>
           </form>
         </div>

@@ -1102,6 +1102,18 @@ dd {
   min-height: 1.4rem;
 }
 
+.form-status.success {
+  color: #42d47d;
+}
+
+.form-status.error {
+  color: #ff8a8a;
+}
+
+.website-field {
+  display: none !important;
+}
+
 .footer {
   align-items: start;
   border-top: 1px solid var(--line);
