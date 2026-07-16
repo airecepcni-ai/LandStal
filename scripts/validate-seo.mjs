@@ -12,14 +12,14 @@ const requiredLandingPages = [
   "seci-kombinace.html",
   "lucni-brany.html",
 ];
-const requiredLandingPaths = requiredLandingPages.map((file) => `/${file.replace(/\.html$/, "")}`);
+const requiredLandingPaths = requiredLandingPages.map((file) => `/${file}`);
 const requiredBlogPaths = [
-  "/blog",
-  "/blog/jak-vybrat-diskovy-podmitac",
-  "/blog/kdy-pouzit-hloubkovy-kypric",
-  "/blog/lucni-brany-regenerace-pastvin",
-  "/blog/diskovy-podmitac-vs-radlickovy-kypric",
-  "/blog/jaky-pracovni-zaber-podle-vykonu-traktoru",
+  "/blog/",
+  "/blog/jak-vybrat-diskovy-podmitac/",
+  "/blog/kdy-pouzit-hloubkovy-kypric/",
+  "/blog/lucni-brany-regenerace-pastvin/",
+  "/blog/diskovy-podmitac-vs-radlickovy-kypric/",
+  "/blog/jaky-pracovni-zaber-podle-vykonu-traktoru/",
 ];
 const requiredFavicons = [
   "favicon.ico",
@@ -29,6 +29,9 @@ const requiredFavicons = [
   "android-chrome-192x192.png",
   "android-chrome-512x512.png",
 ];
+const unpublishedHtmlFiles = new Set([
+  "claude-leverage-audit.html",
+]);
 const faviconTags = [
   '<link rel="icon" href="/favicon.ico" sizes="any">',
   '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">',
@@ -58,9 +61,9 @@ function canonicalForHtmlFile(file) {
     const cleanPath = file
       .replaceAll(sep, "/")
       .replace(/\/index\.html$/, "");
-    return `${base}/${cleanPath}`;
+    return `${base}/${cleanPath}/`;
   }
-  return `${base}/${file.replace(/\.html$/, "")}`;
+  return `${base}/${file}`;
 }
 
 function escapeRegex(value) {
@@ -71,7 +74,8 @@ function pathToHtmlFile(pathname) {
   if (pathname === "/") return "index.html";
   const cleanPath = pathname.replace(/^\/+/, "").replace(/\/$/, "");
   if (cleanPath.startsWith("blog")) return `${cleanPath}/index.html`;
-  return `${cleanPath}.html`;
+  if (cleanPath.endsWith(".html")) return cleanPath;
+  return null;
 }
 
 async function collectHtmlFiles(directory) {
@@ -89,7 +93,9 @@ async function collectHtmlFiles(directory) {
   return found;
 }
 
-const htmlFiles = (await collectHtmlFiles(rootPath)).sort();
+const htmlFiles = (await collectHtmlFiles(rootPath))
+  .filter((file) => !unpublishedHtmlFiles.has(file))
+  .sort();
 
 for (const file of requiredLandingPages) {
   assert(htmlFiles.includes(file), `${file}: required SEO landing page exists`);
@@ -132,7 +138,7 @@ for (const file of htmlFiles) {
 
   if (canonicalMatches.length === 1) {
     const canonical = canonicalMatches[0][1];
-    assert(canonical === canonicalForHtmlFile(file), `${file}: canonical matches clean landstal.cz URL`);
+    assert(canonical === canonicalForHtmlFile(file), `${file}: canonical matches its GitHub Pages URL`);
     assert(!/landstal\.(pl|eu)/i.test(canonical), `${file}: canonical does not point to .pl or .eu`);
     assert(canonical === canonical.toLowerCase(), `${file}: canonical URL is lowercase`);
   }
@@ -184,7 +190,7 @@ for (const file of htmlFiles) {
       continue;
     }
     const targetFile = pathToHtmlFile(pathname);
-    assert(existingHtmlFiles.has(targetFile), `${file}: internal link ${href} resolves to ${targetFile}`);
+    assert(Boolean(targetFile && existingHtmlFiles.has(targetFile)), `${file}: internal link ${href} resolves to a published HTML page`);
   }
 }
 
@@ -198,16 +204,11 @@ for (const file of ["index.html", "produkty.html"]) {
 
 for (const file of ["index.html", "produkty.html", "kontakt.html", "o-nas.html"]) {
   const html = await readFile(join(rootPath, file), "utf8");
-  assert(/href="\/blog(?:[?#][^"]*)?"/i.test(html), `${file}: links to blog index`);
+  assert(/href="\/blog\/(?:[?#][^"]*)?"/i.test(html), `${file}: links to blog index`);
 }
 
-const vercel = JSON.parse(await readFile(join(rootPath, "vercel.json"), "utf8"));
-const wwwRedirect = vercel.redirects?.some((redirect) => {
-  return redirect.permanent === true
-    && redirect.destination === "https://landstal.cz/:path*"
-    && redirect.has?.some((has) => has.type === "host" && has.value === "www.landstal.cz");
-});
-assert(Boolean(wwwRedirect), "vercel.json has permanent www.landstal.cz to https://landstal.cz redirect");
+const cname = await readFile(join(rootPath, "CNAME"), "utf8").catch(() => "");
+assert(cname.trim() === "landstal.cz", "CNAME configures the canonical GitHub Pages domain");
 
 if (runLive) {
   const liveChecks = [
@@ -229,6 +230,11 @@ if (runLive) {
       const body = await response.text();
       assert(/<urlset[\s>]/.test(body), "/sitemap.xml returns valid-looking XML");
     }
+  }
+
+  for (const url of sitemapUrls) {
+    const response = await fetch(url);
+    assert(response.status === 200, `${url} returns 200`);
   }
 }
 

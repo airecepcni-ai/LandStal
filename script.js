@@ -109,14 +109,18 @@ quoteForm?.addEventListener("submit", async (event) => {
   submitButton.disabled = true;
 
   try {
-    const response = await fetch(quoteForm.action || "/api/enquiry", {
+    const response = await fetch(quoteForm.dataset.endpoint || quoteForm.action, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
       body: JSON.stringify(payload),
     });
     const result = await response.json().catch(() => ({}));
+    const succeeded = result.success === true || result.success === "true";
 
-    if (!response.ok || !result.ok) {
+    if (!response.ok || !succeeded) {
       throw new Error(result.message || "Poptávku se nepodařilo odeslat.");
     }
 
