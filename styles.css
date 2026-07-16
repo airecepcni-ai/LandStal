@@ -1072,6 +1072,33 @@ dd {
   grid-column: 1 / -1;
 }
 
+.quote-form .button-primary {
+  background: linear-gradient(135deg, #0b6dcc, #004a99);
+  border-color: #62adff;
+  box-shadow: 0 12px 30px rgba(38, 138, 255, 0.28);
+  color: var(--white);
+}
+
+.quote-form .button-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1976d2, #075eae);
+  box-shadow: 0 14px 34px rgba(38, 138, 255, 0.42);
+}
+
+.quote-form .button-primary:focus-visible {
+  outline: 3px solid rgba(169, 199, 255, 0.9);
+  outline-offset: 3px;
+}
+
+.quote-form .button-primary:disabled {
+  background: #17284a;
+  border-color: #36547f;
+  box-shadow: none;
+  color: #c8d8f2;
+  cursor: wait;
+  opacity: 1;
+  transform: none;
+}
+
 .check {
   align-items: start;
   display: flex !important;
