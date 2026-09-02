@@ -179,13 +179,16 @@ textarea {
 }
 
 .button-primary {
-  border: 1.5px solid var(--blue);
+  background: linear-gradient(135deg, #0878db, #0052ac);
+  border: 1.5px solid #0052ac;
+  box-shadow: 0 10px 24px rgba(0, 98, 204, 0.26);
   color: var(--white);
 }
 
 .button-primary:hover {
-  background: rgba(38, 138, 255, 0.12);
-  box-shadow: 0 0 22px var(--glow);
+  background: linear-gradient(135deg, #1688ef, #0a63c4);
+  border-color: #0a63c4;
+  box-shadow: 0 14px 30px rgba(0, 98, 204, 0.38);
   transform: translateY(-1px);
 }
 
