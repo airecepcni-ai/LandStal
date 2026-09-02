@@ -1,6 +1,7 @@
 .chrome-*/
 .claude/settings.local.json
 .quotes_tmp*/
+.quotes_apb/
 .vercel/
 landstal-cz-website-public.zip
 *.bat
